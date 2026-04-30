@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuangan Keluarga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Catatan Keuangan</h2>
+    
+    <!-- Tab Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('input', this)">Input</button>
+        <button class="tab-btn" onclick="switchTab('dashboard', this)">Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('master', this)">Pengaturan</button>
+    </div>
+
+    <!-- TAB 1: INPUT DATA -->
+    <div id="tab-input" class="section active">
+        <div class="segmented-control" id="jenisTransaksi">
+            <button class="seg-btn active" data-val="Keluar">Pengeluaran</button>
+            <button class="seg-btn" data-val="Masuk">Pemasukan</button>
+            <button class="seg-btn" data-val="Mutasi">Mutasi</button>
+        </div>
+
+        <form id="formInput">
+            <div class="form-group">
+                <label>Tanggal Transaksi</label>
+                <input type="date" id="tanggal" required>
+            </div>
+
+            <div id="group-normal">
+                <div class="form-group">
+                    <label>Kategori Utama</label>
+                    <select id="kategoriUtama"></select>
+                </div>
+                <div class="form-group">
+                    <label>Sub-Kategori</label>
+                    <select id="subKategori"></select>
+                </div>
+                <div class="form-group">
+                    <label>Pelaku (Siapa?)</label>
+                    <select id="pelaku"></select>
+                </div>
+                <div class="form-group">
+                    <label>Metode Pembayaran</label>
+                    <select id="metodeBayar"></select>
+                </div>
+                <div class="form-group" id="group-rekening" style="display: none;">
+                    <label>Pilih Rekening / Dompet</label>
+                    <select id="rekening"></select>
+                </div>
+            </div>
+
+            <div id="group-mutasi" style="display: none;">
+                <div class="form-group">
+                    <label>Rekening Asal (Kirim dari)</label>
+                    <select id="rekeningAsal"></select>
+                </div>
+                <div class="form-group">
+                    <label>Rekening Tujuan (Terima di)</label>
+                    <select id="rekeningTujuan"></select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nominal (Rp)</label>
+                <input type="number" id="nominal" inputmode="numeric" placeholder="0" required>
+            </div>
+            <div class="form-group">
+                <label>Catatan (Opsional)</label>
+                <input type="text" id="catatan" placeholder="Tambahkan keterangan singkat...">
+            </div>
+
+            <button type="button" class="submit-btn" onclick="simpanTransaksi()">Simpan Transaksi</button>
+        </form>
+    </div>
+
+    <!-- TAB 2: DASHBOARD -->
+    <div id="tab-dashboard" class="section">
+        <div class="filter-row">
+            <button class="filter-btn" onclick="setFilter(this)">Hari Ini</button>
+            <button class="filter-btn" onclick="setFilter(this)">Minggu Ini</button>
+            <button class="filter-btn active" onclick="setFilter(this)">Bulan Ini</button>
+            <button class="filter-btn" onclick="setFilter(this)">Tahun Ini</button>
+        </div>
+        
+        <div class="summary-box">
+            <div class="card card-in">
+                <h4>Pemasukan</h4>
+                <h3>Rp 15.000.000</h3>
+            </div>
+            <div class="card card-out">
+                <h4>Pengeluaran</h4>
+                <h3>Rp 8.500.000</h3>
+            </div>
+        </div>
+
+        <h4 style="text-align: center; color: var(--text-muted); font-size: 13px; font-weight: 500; margin-bottom: 0;">Distribusi Pengeluaran</h4>
+        <div class="chart-container">
+            <canvas id="kategoriChart"></canvas>
+        </div>
+    </div>
+
+    <!-- TAB 3: MASTER DATA -->
+    <div id="tab-master" class="section">
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 20px; line-height: 1.5;">Kelola daftar opsi pada formulir input.</p>
+        <div id="masterDataContainer"></div>
+    </div>
+</div>
+
+<!-- Load Scripts Berurutan -->
+<script src="js/api.js"></script>
+<script src="js/master.js"></script>
+<script src="js/form.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
