@@ -24,17 +24,22 @@
 
     <!-- TAB 1: INPUT DATA -->
     <div id="tab-input" class="section active">
+        <!-- Urutan Tombol Pemasukan di Kiri, Pengeluaran di Tengah -->
         <div class="segmented-control" id="jenisTransaksi">
-            <button class="seg-btn active" data-val="Keluar">Pengeluaran</button>
             <button class="seg-btn" data-val="Masuk">Pemasukan</button>
+            <button class="seg-btn active" data-val="Keluar">Pengeluaran</button>
             <button class="seg-btn" data-val="Mutasi">Mutasi</button>
         </div>
 
-        <!-- Tambahkan class form-flex untuk mengatur urutan -->
         <form id="formInput" class="form-flex">
             <div class="form-group" id="wrap-tanggal">
                 <label>Tanggal Transaksi</label>
                 <input type="date" id="tanggal" required>
+            </div>
+
+            <div class="form-group" id="wrap-nominal">
+                <label>Nominal (Rp)</label>
+                <input type="text" id="nominal" inputmode="numeric" placeholder="0" required>
             </div>
 
             <div class="form-group" id="wrap-kategoriUtama">
@@ -72,29 +77,37 @@
                 <select id="rekeningTujuan"></select>
             </div>
 
-            <div class="form-group" id="wrap-nominal">
-                <label>Nominal (Rp)</label>
-                <input type="number" id="nominal" inputmode="numeric" placeholder="0" required>
-            </div>
-
             <div class="form-group" id="wrap-catatan">
                 <label>Catatan (Opsional)</label>
                 <input type="text" id="catatan" placeholder="Tambahkan keterangan singkat...">
             </div>
 
+            <!-- Tombol simpan selalu di bawah -->
             <button type="button" class="submit-btn" style="order: 99;" onclick="simpanTransaksi()">Simpan Transaksi</button>
         </form>
     </div>
 
     <!-- TAB 2: DASHBOARD -->
     <div id="tab-dashboard" class="section">
+        
+        <!-- Barisan Tombol Filter -->
         <div class="filter-row">
             <button class="filter-btn" onclick="setFilter(this)">Hari Ini</button>
             <button class="filter-btn" onclick="setFilter(this)">Minggu Ini</button>
             <button class="filter-btn active" onclick="setFilter(this)">Bulan Ini</button>
             <button class="filter-btn" onclick="setFilter(this)">Tahun Ini</button>
+            <button class="filter-btn" onclick="setFilter(this)">Custom</button>
+        </div>
+
+        <!-- UI Kalender Custom (Tersembunyi secara default) -->
+        <div id="customDateContainer" style="display: none; gap: 8px; margin-bottom: 20px; animation: fadeIn 0.3s ease;">
+            <input type="date" id="startDate" style="padding: 10px; border-radius: 12px; font-size: 12px; flex: 1;">
+            <span style="align-self: center; color: var(--text-muted); font-size: 13px; font-weight: bold;">s/d</span>
+            <input type="date" id="endDate" style="padding: 10px; border-radius: 12px; font-size: 12px; flex: 1;">
+            <button class="submit-btn" style="padding: 10px 15px; margin-top: 0; width: auto; font-size: 13px;" onclick="applyCustomFilter()">Cari</button>
         </div>
         
+        <!-- Rangkuman Kotak Hijau & Merah -->
         <div class="summary-box">
             <div class="card card-in">
                 <h4>Pemasukan</h4>

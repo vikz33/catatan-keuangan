@@ -1,8 +1,25 @@
+// File: js/form.js
+
 let jenisTransaksiAktif = "Keluar";
 
 function initForm() {
+    // Set tanggal hari ini
     document.getElementById('tanggal').valueAsDate = new Date();
     
+    // Auto-Format Nominal (Rupiah)
+    const nominalInput = document.getElementById('nominal');
+    if (nominalInput) {
+        nominalInput.addEventListener('input', function(e) {
+            let angka = this.value.replace(/[^0-9]/g, '');
+            if(angka) {
+                this.value = parseInt(angka, 10).toLocaleString('id-ID');
+            } else {
+                this.value = '';
+            }
+        });
+    }
+
+    // Logika Tombol Masuk/Keluar/Mutasi
     document.querySelectorAll('.seg-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             if(jenisTransaksiAktif !== this.getAttribute('data-val')) {
@@ -10,7 +27,6 @@ function initForm() {
                 this.classList.add('active');
                 jenisTransaksiAktif = this.getAttribute('data-val');
                 
-                // Render ulang dropdown kategori setiap kali ganti tab (Masuk/Keluar)
                 renderSemuaDropdown(); 
                 aturLogikaForm();
             }
@@ -40,56 +56,50 @@ function aturLogikaForm() {
 
     let metode = document.getElementById('metodeBayar').value;
 
-    [wKatUtama, wSubKat, wPelaku, wMetode, wRekening, wAsal, wTujuan].forEach(el => el.style.display = 'none');
+    // Sembunyikan semuanya terlebih dahulu (dengan pelindung error)
+    [wKatUtama, wSubKat, wPelaku, wMetode, wRekening, wAsal, wTujuan].forEach(el => {
+        if(el) el.style.display = 'none';
+    });
 
     if (jenisTransaksiAktif === "Mutasi") {
-        wAsal.style.display = 'block';
-        wTujuan.style.display = 'block';
+        if(wAsal) wAsal.style.display = 'block';
+        if(wTujuan) wTujuan.style.display = 'block';
 
-        wTanggal.style.order = 1;
-        wAsal.style.order = 2;
-        wTujuan.style.order = 3;
-        wNominal.style.order = 4;
-        wCatatan.style.order = 5;
+        if(wTanggal) wTanggal.style.order = 1;
+        if(wAsal) wAsal.style.order = 2;
+        if(wTujuan) wTujuan.style.order = 3;
+        if(wNominal) wNominal.style.order = 4;
+        if(wCatatan) wCatatan.style.order = 5;
     } else {
-        wKatUtama.style.display = 'block';
-        wSubKat.style.display = 'block';
-        wPelaku.style.display = 'block';
-        wMetode.style.display = 'block';
+        if(wKatUtama) wKatUtama.style.display = 'block';
+        if(wSubKat) wSubKat.style.display = 'block';
+        if(wPelaku) wPelaku.style.display = 'block';
+        if(wMetode) wMetode.style.display = 'block';
 
         if (metode !== "Tunai" && referensi.metodeBayar.length > 0) {
-            wRekening.style.display = 'block';
+            if(wRekening) wRekening.style.display = 'block';
         }
 
-        if (jenisTransaksiAktif === "Keluar") {
-            wTanggal.style.order = 1;
-            wKatUtama.style.order = 2;
-            wSubKat.style.order = 3;
-            wPelaku.style.order = 4;
-            wMetode.style.order = 5;
-            wRekening.style.order = 6;
-            wNominal.style.order = 7;
-            wCatatan.style.order = 8;
-        } else if (jenisTransaksiAktif === "Masuk") {
-            wTanggal.style.order = 1;
-            wNominal.style.order = 2;
-            wKatUtama.style.order = 3;
-            wSubKat.style.order = 4;
-            wPelaku.style.order = 5;
-            wMetode.style.order = 6;
-            wRekening.style.order = 7;
-            wCatatan.style.order = 8;
-        }
+        // Urutan Form Keluar dan Masuk (Nominal di urutan ke-2)
+        if(wTanggal) wTanggal.style.order = 1;
+        if(wNominal) wNominal.style.order = 2;
+        if(wKatUtama) wKatUtama.style.order = 3;
+        if(wSubKat) wSubKat.style.order = 4;
+        if(wPelaku) wPelaku.style.order = 5;
+        if(wMetode) wMetode.style.order = 6;
+        if(wRekening) wRekening.style.order = 7;
+        if(wCatatan) wCatatan.style.order = 8;
     }
 }
 
 function renderSemuaDropdown() {
-    // Tentukan sumber kategori berdasarkan jenis transaksi
     let sourceKategori = (jenisTransaksiAktif === "Masuk") ? referensi.kategoriMasuk : referensi.kategoriKeluar;
     
-    let katKeys = Object.keys(sourceKategori);
-    isiDropdown('kategoriUtama', katKeys);
-    if(katKeys.length > 0) renderSubKategori(katKeys[0]);
+    if (sourceKategori) {
+        let katKeys = Object.keys(sourceKategori);
+        isiDropdown('kategoriUtama', katKeys);
+        if(katKeys.length > 0) renderSubKategori(katKeys[0]);
+    }
 
     isiDropdown('pelaku', referensi.pelaku);
     isiDropdown('metodeBayar', referensi.metodeBayar);
@@ -100,20 +110,78 @@ function renderSemuaDropdown() {
 
 function renderSubKategori(kategoriTerpilih) {
     let sourceKategori = (jenisTransaksiAktif === "Masuk") ? referensi.kategoriMasuk : referensi.kategoriKeluar;
-    let subKategoriList = sourceKategori[kategoriTerpilih] || [];
-    isiDropdown('subKategori', subKategoriList);
+    if (sourceKategori) {
+        let subKategoriList = sourceKategori[kategoriTerpilih] || [];
+        isiDropdown('subKategori', subKategoriList);
+    }
 }
 
 function isiDropdown(idSelect, arrayData) {
     let select = document.getElementById(idSelect);
-    select.innerHTML = '';
-    arrayData.forEach(item => select.add(new Option(item, item)));
+    if(select) {
+        select.innerHTML = '';
+        if (arrayData && arrayData.length > 0) {
+            arrayData.forEach(item => select.add(new Option(item, item)));
+        }
+    }
 }
 
-function simpanTransaksi() {
-    let nominal = document.getElementById('nominal').value;
-    if(!nominal) { alert("Nominal belum diisi."); return; }
-    alert(`Transaksi ${jenisTransaksiAktif} berhasil disimpan!`);
-    document.getElementById('nominal').value = '';
-    document.getElementById('catatan').value = '';
+// Mengubah fungsi simpan untuk ngobrol dengan Google Sheets
+async function simpanTransaksi() {
+    let nominalInput = document.getElementById('nominal');
+    let nominalKotor = nominalInput.value;
+    let nominalBersih = nominalKotor.replace(/\./g, ''); // Buang titik
+
+    if(!nominalBersih) { 
+        alert("Nominal belum diisi."); 
+        return; 
+    }
+
+    // Ubah teks tombol jadi loading
+    const submitBtn = document.querySelector('.submit-btn');
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "⏳ Sedang Menyimpan...";
+    submitBtn.disabled = true;
+
+    // Bungkus semua isian form ke dalam satu objek
+    const dataKirim = {
+        tanggal: document.getElementById('tanggal').value,
+        jenis: jenisTransaksiAktif,
+        nominal: parseInt(nominalBersih),
+        kategoriUtama: document.getElementById('kategoriUtama').value || "-",
+        subKategori: document.getElementById('subKategori').value || "-",
+        pelaku: document.getElementById('pelaku').value || "-",
+        metodeBayar: document.getElementById('metodeBayar').value || "-",
+        rekening: document.getElementById('rekening').value || "-",
+        rekeningAsal: document.getElementById('rekeningAsal').value || "-",
+        rekeningTujuan: document.getElementById('rekeningTujuan').value || "-",
+        catatan: document.getElementById('catatan').value || "-"
+    };
+
+    try {
+        // Proses mengirim data ke Google Apps Script
+        const respon = await fetch(GAS_URL, {
+            method: 'POST',
+            // Gunakan text/plain untuk menghindari pemblokiran keamanan browser (CORS)
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(dataKirim)
+        });
+
+        const hasil = await respon.json();
+
+        if (hasil.status === "sukses") {
+            alert(`✅ Transaksi berhasil dicatat ke Google Sheets!`);
+            // Kosongkan form setelah sukses
+            nominalInput.value = '';
+            document.getElementById('catatan').value = '';
+        } else {
+            alert("❌ Gagal menyimpan: " + hasil.pesan);
+        }
+    } catch (error) {
+        alert("🚨 Terjadi kesalahan jaringan. Pastikan internet Anda aktif.\nError: " + error.message);
+    } finally {
+        // Kembalikan tombol seperti semula
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+    }
 }
