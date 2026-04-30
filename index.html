@@ -11,9 +11,11 @@
 <body>
 
 <div class="container">
-    <h2>Catatan Keuangan</h2>
+    <div class="header-top">
+        <h2>Catatan Keuangan</h2>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
+    </div>
     
-    <!-- Tab Navigation -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('input', this)">Input</button>
         <button class="tab-btn" onclick="switchTab('dashboard', this)">Dashboard</button>
@@ -28,56 +30,59 @@
             <button class="seg-btn" data-val="Mutasi">Mutasi</button>
         </div>
 
-        <form id="formInput">
-            <div class="form-group">
+        <!-- Tambahkan class form-flex untuk mengatur urutan -->
+        <form id="formInput" class="form-flex">
+            <div class="form-group" id="wrap-tanggal">
                 <label>Tanggal Transaksi</label>
                 <input type="date" id="tanggal" required>
             </div>
 
-            <div id="group-normal">
-                <div class="form-group">
-                    <label>Kategori Utama</label>
-                    <select id="kategoriUtama"></select>
-                </div>
-                <div class="form-group">
-                    <label>Sub-Kategori</label>
-                    <select id="subKategori"></select>
-                </div>
-                <div class="form-group">
-                    <label>Pelaku (Siapa?)</label>
-                    <select id="pelaku"></select>
-                </div>
-                <div class="form-group">
-                    <label>Metode Pembayaran</label>
-                    <select id="metodeBayar"></select>
-                </div>
-                <div class="form-group" id="group-rekening" style="display: none;">
-                    <label>Pilih Rekening / Dompet</label>
-                    <select id="rekening"></select>
-                </div>
+            <div class="form-group" id="wrap-kategoriUtama">
+                <label>Kategori Utama</label>
+                <select id="kategoriUtama"></select>
             </div>
 
-            <div id="group-mutasi" style="display: none;">
-                <div class="form-group">
-                    <label>Rekening Asal (Kirim dari)</label>
-                    <select id="rekeningAsal"></select>
-                </div>
-                <div class="form-group">
-                    <label>Rekening Tujuan (Terima di)</label>
-                    <select id="rekeningTujuan"></select>
-                </div>
+            <div class="form-group" id="wrap-subKategori">
+                <label>Sub-Kategori</label>
+                <select id="subKategori"></select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="wrap-pelaku">
+                <label>Pelaku (Siapa?)</label>
+                <select id="pelaku"></select>
+            </div>
+
+            <div class="form-group" id="wrap-metodeBayar">
+                <label>Metode Pembayaran</label>
+                <select id="metodeBayar"></select>
+            </div>
+
+            <div class="form-group" id="wrap-rekening">
+                <label>Pilih Rekening / Dompet</label>
+                <select id="rekening"></select>
+            </div>
+
+            <div class="form-group" id="wrap-rekAsal">
+                <label>Rekening Asal (Kirim dari)</label>
+                <select id="rekeningAsal"></select>
+            </div>
+
+            <div class="form-group" id="wrap-rekTujuan">
+                <label>Rekening Tujuan (Terima di)</label>
+                <select id="rekeningTujuan"></select>
+            </div>
+
+            <div class="form-group" id="wrap-nominal">
                 <label>Nominal (Rp)</label>
                 <input type="number" id="nominal" inputmode="numeric" placeholder="0" required>
             </div>
-            <div class="form-group">
+
+            <div class="form-group" id="wrap-catatan">
                 <label>Catatan (Opsional)</label>
                 <input type="text" id="catatan" placeholder="Tambahkan keterangan singkat...">
             </div>
 
-            <button type="button" class="submit-btn" onclick="simpanTransaksi()">Simpan Transaksi</button>
+            <button type="button" class="submit-btn" style="order: 99;" onclick="simpanTransaksi()">Simpan Transaksi</button>
         </form>
     </div>
 
@@ -114,7 +119,6 @@
     </div>
 </div>
 
-<!-- Load Scripts Berurutan -->
 <script src="js/api.js"></script>
 <script src="js/master.js"></script>
 <script src="js/form.js"></script>
