@@ -170,13 +170,20 @@ async function simpanTransaksi() {
         return; 
     }
 
-    const submitBtn = document.querySelector('.submit-btn');
+    // Pastikan kita mengunci tombol di Form Input (bukan form utang)
+    const submitBtn = document.querySelector('#formInput .submit-btn');
     const originalText = submitBtn.innerText;
+    submitBtn.classList.add('btn-loading');
     submitBtn.innerText = "Memproses...";
     submitBtn.disabled = true;
 
-    // Tambahkan variabel 'profil' ke dalam data yang akan dikirim ke Sheets
+    // 🚨 CEK APAKAH SEDANG EDIT ATAU INPUT BARU
+    let idEdit = document.getElementById('editRowId').value;
+
+    // Siapkan bungkusan data
     const dataKirim = {
+        action: idEdit ? "editTransaksi" : "", // Jika ada ID, suruh Backend lakukan Edit
+        rowId: idEdit ? parseInt(idEdit) : null,
         profil: profilAktif, 
         tanggal: document.getElementById('tanggal').value,
         jenis: jenisTransaksiAktif,
@@ -201,9 +208,19 @@ async function simpanTransaksi() {
         const hasil = await respon.json();
 
         if (hasil.status === "sukses") {
-            alert(`✅ Transaksi berhasil dicatat ke Profil: ${profilAktif}`);
-            nominalInput.value = '';
-            document.getElementById('catatan').value = '';
+            if (idEdit) {
+                alert(`✅ Transaksi berhasil diperbarui!`);
+                batalEdit(); // Kembalikan form ke wujud semula (Input Baru)
+            } else {
+                alert(`✅ Transaksi berhasil dicatat ke Profil: ${profilAktif}`);
+                nominalInput.value = '';
+                document.getElementById('catatan').value = '';
+            }
+
+            // WAJIB: Tarik ulang data dari Google Sheets agar riwayat di Dashboard ikut berubah!
+            await tarikDataDariSheet();
+            prosesDashboard(document.querySelector('.filter-btn.active').innerText);
+
         } else {
             alert("❌ Gagal menyimpan: " + hasil.pesan);
         }
@@ -211,7 +228,8 @@ async function simpanTransaksi() {
         alert("🚨 Terjadi kesalahan jaringan. \nError: " + error.message);
     } finally {
         submitBtn.classList.remove('btn-loading');
-        submitBtn.innerText = originalText;
+        // Kembalikan teks tombol sesuai state terakhirnya
+        submitBtn.innerText = document.getElementById('editRowId').value ? "Simpan Perubahan" : "Simpan Transaksi";
         submitBtn.disabled = false;
     }
 }
@@ -400,3 +418,89 @@ async function tarikDataUtangDariSheet() {
         return false;
     }
 }
+
+// ==========================================
+// FITUR EDIT & HAPUS TRANSAKSI NORMAL
+// ==========================================
+window.editTrx = function(rowId) {
+    let trx = databaseTransaksi.find(t => t.rowId === rowId);
+    if(!trx) return alert("Data tidak ditemukan!");
+
+    // 1. Pindah Tab ke Input
+    switchTab('input', document.querySelectorAll('.tab-btn')[1]);
+
+    // 2. Set Jenis Transaksi
+    document.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+    let btnJenis = Array.from(document.querySelectorAll('.seg-btn')).find(b => b.getAttribute('data-val') === trx.jenis);
+    if(btnJenis) {
+        btnJenis.classList.add('active');
+        jenisTransaksiAktif = trx.jenis;
+        renderSemuaDropdown();
+        aturLogikaForm();
+    }
+
+    // 3. Isi nilai ke form
+    document.getElementById('editRowId').value = rowId;
+    document.getElementById('badgeEditMode').style.display = 'block';
+    document.querySelector('#formInput .submit-btn').innerText = "Simpan Perubahan";
+    document.querySelector('#formInput .submit-btn').style.background = "var(--warning)";
+    document.querySelector('#formInput .submit-btn').style.color = "#1a1a1a";
+
+    // Format Tanggal (Dari YYYY-MM-DDTHH:MM... ke YYYY-MM-DD)
+    try { document.getElementById('tanggal').value = new Date(trx.tanggal).toISOString().split('T')[0]; } catch(e){}
+    
+    document.getElementById('nominal').value = Number(trx.nominal).toLocaleString('id-ID');
+    document.getElementById('kategoriUtama').value = trx.kategoriUtama;
+    renderSubKategori(trx.kategoriUtama); // Update dropdown sub
+    setTimeout(() => { document.getElementById('subKategori').value = trx.subKategori; }, 50);
+    
+    document.getElementById('pelaku').value = trx.pelaku;
+    document.getElementById('metodeBayar').value = trx.metodeBayar;
+    document.getElementById('rekening').value = trx.rekening;
+    document.getElementById('rekeningAsal').value = trx.rekeningAsal;
+    document.getElementById('rekeningTujuan').value = trx.rekeningTujuan;
+    document.getElementById('catatan').value = trx.catatan;
+    
+    aturLogikaForm(); // Reflek Tampilan
+}
+
+window.batalEdit = function() {
+    document.getElementById('editRowId').value = "";
+    document.getElementById('badgeEditMode').style.display = 'none';
+    document.querySelector('#formInput .submit-btn').innerText = "Simpan Transaksi";
+    document.querySelector('#formInput .submit-btn').style.background = "var(--primary)";
+    document.querySelector('#formInput .submit-btn').style.color = "#fff";
+    document.getElementById('formInput').reset();
+    document.getElementById('tanggal').valueAsDate = new Date();
+}
+
+window.hapusTrx = async function(rowId) {
+    if(!confirm("Yakin ingin MENGHAPUS permanen transaksi ini?")) return;
+
+    try {
+        const respon = await fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: "hapusTransaksi", rowId: rowId })
+        });
+        const hasil = await respon.json();
+        
+        if (hasil.status === "sukses") {
+            alert("🗑️ Transaksi berhasil dihapus!");
+            await tarikDataDariSheet(); // REFRESH DATA WAJIB
+            prosesDashboard(document.querySelector('.filter-btn.active').innerText);
+        } else alert("❌ Gagal hapus: " + hasil.pesan);
+    } catch (err) { alert("🚨 Error: " + err.message); }
+}
+
+// UBAH FUNGSI simpanTransaksi AGAR MENDUKUNG EDIT
+// Cari fungsi simpanTransaksi(), lalu sisipkan pengecekan edit ini:
+// (Timpa deklarasi dataKirim dengan ini):
+/*
+    let idEdit = document.getElementById('editRowId').value;
+    const dataKirim = {
+        action: idEdit ? "editTransaksi" : "",
+        rowId: idEdit ? parseInt(idEdit) : null,
+        profil: profilAktif, 
+        // ... (sisa data kirim sama persis)
+*/

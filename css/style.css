@@ -137,8 +137,10 @@ body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator { --icon-in
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     min-width: 160px;
     z-index: 9999;
-    overflow: hidden;
+    //*overflow: hidden;*//
 }
+
+
 .custom-dropdown-item {
     padding: 12px 16px;
     color: var(--text-main);

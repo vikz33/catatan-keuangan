@@ -106,6 +106,46 @@ window.prosesDashboard = function(filterMode, customStart = null, customEnd = nu
 
     hitungSummary(dataTersaring);
     gambarGrafik(dataTersaring);
+    renderRiwayatTransaksi(dataTersaring);
+}
+
+function renderRiwayatTransaksi(data) {
+    let container = document.getElementById('daftarRiwayatDash');
+    let html = '';
+
+    // Jika sedang klik kartu Pemasukan, hanya tampilkan list pemasukan. Jika Semua, tampilkan semua.
+    let dataList = data;
+    if (chartDisplayMode !== 'Semua') {
+        dataList = data.filter(t => t.jenis === chartDisplayMode);
+    }
+
+    if (dataList.length === 0) {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px;">Tidak ada transaksi pada periode ini.</p>`;
+        return;
+    }
+
+    dataList.slice().reverse().forEach(trx => { // Reverse agar yang terbaru di atas
+        let isMasuk = trx.jenis === "Masuk";
+        let color = isMasuk ? "var(--success)" : (trx.jenis === "Mutasi" ? "var(--warning)" : "var(--danger)");
+        
+        html += `
+        <div style="background: var(--input-bg); border-radius: 10px; padding: 12px; border-left: 4px solid ${color}; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <strong style="font-size: 13px; color: var(--text-main);">${trx.kategoriUtama}</strong>
+                    <span style="font-size: 11px; color: var(--text-muted);">${trx.tanggal}</span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">${trx.subKategori} • via ${trx.rekening}</div>
+                <div style="font-size: 14px; font-weight: bold; color: ${color};">${isMasuk ? '+' : '-'} Rp ${Number(trx.nominal).toLocaleString('id-ID')}</div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 5px; margin-left: 15px;">
+                <button onclick="editTrx(${trx.rowId})" style="background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 10px; cursor: pointer;">Edit</button>
+                <button onclick="hapusTrx(${trx.rowId})" style="background: var(--danger); color: #fff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 10px; cursor: pointer;">Hapus</button>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
 }
 
 function hitungSummary(data) {
